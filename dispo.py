@@ -1,10 +1,31 @@
 import pandas as pd
 import streamlit as st
+import requests
 from docx import Document
+from io import StringIO
+# Función para obtener los datos desde la API
+def obtener_datos_api():
+    data = {
+        'token': '5A253AD70186A4E6CB1C22620A7BF6A5',
+        'content': 'report',
+        'format': 'csv',
+        'report_id': '376',
+        'csvDelimiter': ';',
+        'rawOrLabel': 'label',
+        'rawOrLabelHeaders': 'label',
+        'exportCheckboxLabel': 'false',
+        'returnFormat': 'json'
+    }
+    r = requests.post('https://centrodeinvestigacionesclinicas.fvl.org.co/apps/redcap/api/', data=data)
+    if r.status_code == 200:
+        return r.text
+    else:
+        st.error(f"Error al obtener los datos: {r.status_code}")
+        return None
 
 # Función para cargar y agrupar el archivo CSV
-def cargar_datos(file):
-    df = pd.read_csv(file, sep=';')
+def cargar_datos(csv_data):
+    df = pd.read_csv(StringIO(csv_data), sep=';')
     df_grouped = df.groupby('ID').first()
     return df_grouped
 
@@ -54,6 +75,7 @@ def generar_documento(nombre_persona, categoria, tabla_estudios):
     st.success(f"Documento guardado como {filename}")
     with open(filename, "rb") as file:
         st.download_button(label="Descargar reporte", data=file, file_name=filename)
+
 st.write(
     """
     <style>
@@ -70,16 +92,16 @@ st.write(
     """,
     unsafe_allow_html=True
 )
+
 # Inicialización de la app con Streamlit
 st.title("Generador de Informes")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
 
-# Subida del archivo CSV
-uploaded_file = st.file_uploader("Cargar base de datos CSV", type=["csv"])
-
-if uploaded_file:
-    df_grouped = cargar_datos(uploaded_file)
+# Obtener datos desde la API
+csv_data = obtener_datos_api()
+if csv_data:
+    df_grouped = cargar_datos(csv_data)
 
     # Selección de categoría
     categorias = [
@@ -109,3 +131,4 @@ if uploaded_file:
             st.error(f"No hay personal registrado en la categoría {seleccion_categoria}.")
     else:
         st.warning("Por favor selecciona una categoría.")
+
