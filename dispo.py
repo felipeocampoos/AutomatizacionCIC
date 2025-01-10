@@ -1,3 +1,77 @@
+import pandas as pd
+import streamlit as st
+import requests
+from docx import Document
+from io import StringIO
+
+# Función para obtener los datos desde la API
+def obtener_datos_api():
+    data = {
+        'token': '5A253AD70186A4E6CB1C22620A7BF6A5',
+        'content': 'report',
+        'format': 'csv',
+        'report_id': '376',
+        'csvDelimiter': ';',
+        'rawOrLabel': 'label',
+        'rawOrLabelHeaders': 'label',
+        'exportCheckboxLabel': 'false',
+        'returnFormat': 'json'
+    }
+    r = requests.post('https://centrodeinvestigacionesclinicas.fvl.org.co/apps/redcap/api/', data=data)
+    if r.status_code == 200:
+        return r.text
+    else:
+        st.error(f"Error al obtener los datos: {r.status_code}")
+        return None
+
+# Función para cargar y agrupar el archivo CSV
+def cargar_datos(csv_data):
+    df = pd.read_csv(StringIO(csv_data), sep=';')
+    df_grouped = df.groupby('ID').first()
+    return df_grouped
+
+# Función para obtener la lista de coordinadores, MD asistenciales o investigadores
+def obtener_coordinadores(df_grouped, columna):
+    coordinadores = df_grouped[columna].dropna().unique()
+    return coordinadores
+
+# Función para calcular la disponibilidad de horas
+def calcular_disponibilidad(fase, categoria):
+    if categoria == "Investigador Principal":
+        if fase == "Administrativo Pre inicio":
+            return "30 minutos"
+        elif fase == "Reclutamiento":
+            return "2 horas"
+        elif fase == "Seguimiento":
+            return "2 horas"
+        elif fase == "Administrativo cierre":
+            return "30 minutos"
+    elif categoria in [
+        "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4",
+        "Co-Investigador 5", "Co-Investigador 6", "Co-Investigador 7"
+    ]:
+        if fase == "Administrativo Pre inicio":
+            return "15 minutos"
+        elif fase == "Reclutamiento":
+            return "1 hora"
+        elif fase == "Seguimiento":
+            return "30 minutos"
+        elif fase == "Administrativo cierre":
+            return "0 minutos"
+    elif categoria in [
+        "Coordinador Principal", "Coordinador backup principal 1", "Coordinador backup principal 2",
+        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5"
+    ]:
+        if fase == "Administrativo Pre inicio":
+            return "1 hora"
+        elif fase == "Reclutamiento":
+            return "4 horas"
+        elif fase == "Seguimiento":
+            return "2 horas"
+        elif fase == "Administrativo cierre":
+            return "1 hora"
+    return "N/A"
+
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
 def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     # Filtrar estudios activos
@@ -10,43 +84,6 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     estudios_filtrados['Estado especifico del estudio'] = estudios_filtrados['Estado especifico del estudio'].str.replace(
         r'^\d+\.\s', '', regex=True)
     
-    # Función para calcular la disponibilidad de horas
-    def calcular_disponibilidad(fase, categoria):
-        if categoria == "Investigador Principal":
-            if fase == "Administrativo Pre inicio":
-                return "30 minutos"
-            elif fase == "Reclutamiento":
-                return "2 horas"
-            elif fase == "Seguimiento":
-                return "2 horas"
-            elif fase == "Administrativo cierre":
-                return "30 minutos"
-        elif categoria in [
-            "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4",
-            "Co-Investigador 5", "Co-Investigador 6", "Co-Investigador 7"
-        ]:
-            if fase == "Administrativo Pre inicio":
-                return "15 minutos"
-            elif fase == "Reclutamiento":
-                return "1 hora"
-            elif fase == "Seguimiento":
-                return "30 minutos"
-            elif fase == "Administrativo cierre":
-                return "0 minutos"
-        elif categoria in [
-            "Coordinador Principal", "Coordinador backup principal 1", "Coordinador backup principal 2",
-            "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5"
-        ]:
-            if fase == "Administrativo Pre inicio":
-                return "1 hora"
-            elif fase == "Reclutamiento":
-                return "4 horas"
-            elif fase == "Seguimiento":
-                return "2 horas"
-            elif fase == "Administrativo cierre":
-                return "1 hora"
-        return "N/A"
-
     # Crear la tabla con los cambios solicitados
     tabla_estudios = pd.DataFrame({
         'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
@@ -55,7 +92,7 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
         'Sujetos Tamizados': estudios_filtrados['Total de tamizados'],
         'Sujetos Activos': estudios_filtrados['Total de activos'],
         'Disponibilidad de horas': estudios_filtrados.apply(
-            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], coordinador_seleccionado), axis=1)
+            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], columna), axis=1)
     }).reset_index(drop=True)
     
     return tabla_estudios
@@ -138,5 +175,3 @@ if csv_data:
             st.error(f"No hay personal registrado en la categoría {seleccion_categoria}.")
     else:
         st.warning("Por favor selecciona una categoría.")
-
-
