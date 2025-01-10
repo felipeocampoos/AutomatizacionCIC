@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 from docx import Document
 from io import StringIO
+
 # Función para obtener los datos desde la API
 def obtener_datos_api():
     data = {
@@ -36,15 +37,18 @@ def obtener_coordinadores(df_grouped, columna):
 
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
 def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
-    estudios_filtrados = df_grouped[df_grouped[columna] == coordinador_seleccionado]
+    # Filtrar estudios activos
+    estudios_filtrados = df_grouped[
+        (df_grouped[columna] == coordinador_seleccionado) &
+        (df_grouped['Estado general del estudio'].str.contains('1. Activo', na=False))
+    ]
     
+    # Crear la tabla con los cambios solicitados
     tabla_estudios = pd.DataFrame({
         'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
         'Número del Comité': estudios_filtrados['Número IRB'],
-        'Fase del Estudio': estudios_filtrados.apply(
-            lambda row: f"Estado: {'Activo' if '1. Activo' in str(row['Estado general del estudio']) else 'Inactivo'}, "
-                        f"Reclutamiento: {'Si' if '1. Si' in str(row['Reclutamiento activo']) else 'No'}", axis=1),
-        'Sujetos Tamizados': estudios_filtrados['Total fallas de tamizaje'],
+        'Fase del Estudio': estudios_filtrados['Estado especifico del estudio'].str.replace(r'^\d+\.\s', '', regex=True),  # Eliminar números iniciales
+        'Sujetos Tamizados': estudios_filtrados['Total de tamizados'],
         'Sujetos Activos': estudios_filtrados['Total de activos']
     }).reset_index(drop=True)
     
