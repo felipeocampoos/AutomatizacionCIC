@@ -147,7 +147,7 @@ if st.button("Reiniciar Aplicación"):
 # Verificar si se ha solicitado reinicio
 if st.session_state.reiniciar:
     st.session_state.reiniciar = False
-    st.experimental_set_query_params()  # Refresca el estado actual de la app
+    st.set_query_params()  # Refresca el estado actual de la app
 
 # Obtener datos desde la API
 csv_data = obtener_datos_api()
