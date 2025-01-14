@@ -133,6 +133,10 @@ st.title("Generador de Informes Acumulados")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
 
+# Inicializar el estado del informe acumulado en session_state
+if 'reporte_acumulado' not in st.session_state:
+    st.session_state.reporte_acumulado = []
+
 # Obtener datos desde la API
 csv_data = obtener_datos_api()
 if csv_data:
@@ -147,8 +151,6 @@ if csv_data:
         "Co-Investigador 6", "Co-Investigador 7"
     ]
 
-    reporte_acumulado = []
-
     seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key="categoria_general")
 
     if seleccion_categoria != "Seleccionar":
@@ -160,17 +162,17 @@ if csv_data:
         if st.button("Agregar a Informe", key="agregar_general"):
             for persona in seleccion_personas:
                 tabla_resultante = estudios_por_coordinador(df_grouped, persona, categoria)
-                reporte_acumulado.append({
+                st.session_state.reporte_acumulado.append({
                     'nombre': persona,
                     'categoria': categoria,
                     'tabla': tabla_resultante
                 })
             st.success(f"Se han agregado {len(seleccion_personas)} reportes al informe acumulado.")
 
-        if reporte_acumulado and st.button("Generar y Descargar Informe Acumulado", key="descargar_informe"):
-            filename = generar_documento_acumulado(reporte_acumulado)
+        if st.session_state.reporte_acumulado and st.button("Generar y Descargar Informe Acumulado", key="descargar_informe"):
+            filename = generar_documento_acumulado(st.session_state.reporte_acumulado)
             with open(filename, "rb") as file:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
-
     else:
         st.warning("Por favor selecciona una categoría.")
+
