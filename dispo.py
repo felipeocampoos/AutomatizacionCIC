@@ -129,7 +129,7 @@ def generar_documento_acumulado(reporte_acumulado):
     return filename
 
 # Código para ejecutar la lógica en la interfaz Streamlit
-st.title("Generador de informes de disponibilidad)
+st.title("Generador de informes de disponibilidad")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
 
