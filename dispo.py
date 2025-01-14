@@ -30,10 +30,10 @@ def cargar_datos(csv_data):
     df_grouped = df.groupby('ID').first()
     return df_grouped
 
-# Función para obtener las categorías asociadas a una persona
-def obtener_categorias(df_grouped, persona):
-    categorias = df_grouped.columns[df_grouped.isin([persona]).any()].tolist()
-    return categorias
+# Función para obtener la lista de coordinadores, MD asistenciales o investigadores
+def obtener_coordinadores(df_grouped, columna):
+    coordinadores = df_grouped[columna].dropna().unique()
+    return coordinadores
 
 # Función para calcular la disponibilidad de horas
 def calcular_disponibilidad(fase, categoria):
@@ -73,10 +73,10 @@ def calcular_disponibilidad(fase, categoria):
     return "N/A"
 
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
-def estudios_por_coordinador(df_grouped, persona, categoria):
+def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     # Filtrar estudios activos
     estudios_filtrados = df_grouped[
-        (df_grouped[categoria] == persona) &
+        (df_grouped[columna] == coordinador_seleccionado) &
         (df_grouped['Estado general del estudio'].str.contains('1. Activo', na=False))
     ]
 
@@ -92,39 +92,44 @@ def estudios_por_coordinador(df_grouped, persona, categoria):
         'Sujetos Tamizados': estudios_filtrados['Total de tamizados'],
         'Sujetos Activos': estudios_filtrados['Total de activos'],
         'Disponibilidad de horas': estudios_filtrados.apply(
-            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], categoria), axis=1)
+            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], columna), axis=1)
     }).reset_index(drop=True)
 
     return tabla_estudios
 
 # Función para generar el documento en Word
-def generar_documento(nombre_persona, categoria, tabla_estudios):
+def generar_documento_acumulado(reporte_acumulado):
     doc = Document()
-    doc.add_heading(f"Reporte para {categoria}", 0)
-    doc.add_paragraph(f"Nombre: {nombre_persona}")
+    doc.add_heading("Reporte Acumulado", 0)
 
-    if not tabla_estudios.empty:
-        doc.add_paragraph("Tabla de estudios asociados:")
-        table = doc.add_table(rows=1, cols=len(tabla_estudios.columns))
-        hdr_cells = table.rows[0].cells
-        for i, col_name in enumerate(tabla_estudios.columns):
-            hdr_cells[i].text = col_name
+    for reporte in reporte_acumulado:
+        nombre_persona = reporte['nombre']
+        categoria = reporte['categoria']
+        tabla_estudios = reporte['tabla']
 
-        for index, row in tabla_estudios.iterrows():
-            row_cells = table.add_row().cells
-            for i, value in enumerate(row):
-                row_cells[i].text = str(value)
-    else:
-        doc.add_paragraph("No hay estudios asociados.")
+        doc.add_heading(f"Reporte para {categoria}", level=1)
+        doc.add_paragraph(f"Nombre: {nombre_persona}")
 
-    filename = f"Reporte_{nombre_persona.replace(' ', '_')}.docx"
+        if not tabla_estudios.empty:
+            doc.add_paragraph("Tabla de estudios asociados:")
+            table = doc.add_table(rows=1, cols=len(tabla_estudios.columns))
+            hdr_cells = table.rows[0].cells
+            for i, col_name in enumerate(tabla_estudios.columns):
+                hdr_cells[i].text = col_name
+
+            for index, row in tabla_estudios.iterrows():
+                row_cells = table.add_row().cells
+                for i, value in enumerate(row):
+                    row_cells[i].text = str(value)
+        else:
+            doc.add_paragraph("No hay estudios asociados.")
+
+    filename = "Reporte_Acumulado.docx"
     doc.save(filename)
-    st.success(f"Documento guardado como {filename}")
-    with open(filename, "rb") as file:
-        st.download_button(label="Descargar reporte", data=file, file_name=filename)
+    return filename
 
 # Código para ejecutar la lógica en la interfaz Streamlit
-st.title("Generador de Informes")
+st.title("Generador de Informes Acumulados")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
 
@@ -133,15 +138,44 @@ csv_data = obtener_datos_api()
 if csv_data:
     df_grouped = cargar_datos(csv_data)
 
-    personas = df_grouped.stack().dropna().unique()
-    seleccion_persona = st.selectbox("Seleccionar Persona", personas)
+    categorias = [
+        "Seleccionar", "Coordinador Principal", "Coordinador backup principal 1", "Coordinador backup principal 2",
+        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", 
+        "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", "MD asistencial 5", 
+        "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "Investigador Principal", 
+        "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4", "Co-Investigador 5",
+        "Co-Investigador 6", "Co-Investigador 7"
+    ]
 
-    if seleccion_persona:
-        categorias = obtener_categorias(df_grouped, seleccion_persona)
-        seleccion_categoria = st.selectbox("Seleccionar Categoría", categorias)
+    reporte_acumulado = []
 
-        if seleccion_categoria:
-            if st.button("Generar Informe"):
-                tabla_resultante = estudios_por_coordinador(df_grouped, seleccion_persona, seleccion_categoria)
-                generar_documento(seleccion_persona, seleccion_categoria, tabla_resultante)
+    while True:
+        seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key=f"categoria_{len(reporte_acumulado)}")
 
+        if seleccion_categoria != "Seleccionar":
+            categoria = seleccion_categoria
+            coordinadores = obtener_coordinadores(df_grouped, categoria)
+
+            seleccion_personas = st.multiselect("Seleccionar Personas", coordinadores, key=f"personas_{len(reporte_acumulado)}")
+
+            if st.button("Agregar a Informe", key=f"agregar_{len(reporte_acumulado)}"):
+                for persona in seleccion_personas:
+                    tabla_resultante = estudios_por_coordinador(df_grouped, persona, categoria)
+                    reporte_acumulado.append({
+                        'nombre': persona,
+                        'categoria': categoria,
+                        'tabla': tabla_resultante
+                    })
+                st.success(f"Se han agregado {len(seleccion_personas)} reportes al informe acumulado.")
+
+        if reporte_acumulado and st.button("Generar y Descargar Informe Acumulado"):
+            filename = generar_documento_acumulado(reporte_acumulado)
+            with open(filename, "rb") as file:
+                st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
+            break
+
+        if st.button("Terminar Selección y Generar Informe", key=f"terminar_{len(reporte_acumulado)}"):
+            break
+
+    else:
+        st.warning("Por favor selecciona una categoría.")
