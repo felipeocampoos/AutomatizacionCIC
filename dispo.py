@@ -137,6 +137,11 @@ st.subheader("Fundación Valle del Lili")
 if 'reporte_acumulado' not in st.session_state:
     st.session_state.reporte_acumulado = []
 
+# Botón para reiniciar la aplicación
+if st.button("Reiniciar Aplicación"):
+    st.session_state.reporte_acumulado = []
+    st.experimental_rerun()
+
 # Obtener datos desde la API
 csv_data = obtener_datos_api()
 if csv_data:
@@ -175,4 +180,5 @@ if csv_data:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
     else:
         st.warning("Por favor selecciona una categoría.")
+
 
