@@ -136,11 +136,18 @@ st.subheader("Fundación Valle del Lili")
 # Inicializar el estado del informe acumulado en session_state
 if 'reporte_acumulado' not in st.session_state:
     st.session_state.reporte_acumulado = []
+if 'reiniciar' not in st.session_state:
+    st.session_state.reiniciar = False
 
 # Botón para reiniciar la aplicación
 if st.button("Reiniciar Aplicación"):
     st.session_state.reporte_acumulado = []
-    st.experimental_rerun()
+    st.session_state.reiniciar = True
+
+# Verificar si se ha solicitado reinicio
+if st.session_state.reiniciar:
+    st.session_state.reiniciar = False
+    st.experimental_set_query_params()  # Refresca el estado actual de la app
 
 # Obtener datos desde la API
 csv_data = obtener_datos_api()
