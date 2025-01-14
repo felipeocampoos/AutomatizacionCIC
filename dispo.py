@@ -149,33 +149,28 @@ if csv_data:
 
     reporte_acumulado = []
 
-    while True:
-        seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key=f"categoria_{len(reporte_acumulado)}")
+    seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key="categoria_general")
 
-        if seleccion_categoria != "Seleccionar":
-            categoria = seleccion_categoria
-            coordinadores = obtener_coordinadores(df_grouped, categoria)
+    if seleccion_categoria != "Seleccionar":
+        categoria = seleccion_categoria
+        coordinadores = obtener_coordinadores(df_grouped, categoria)
 
-            seleccion_personas = st.multiselect("Seleccionar Personas", coordinadores, key=f"personas_{len(reporte_acumulado)}")
+        seleccion_personas = st.multiselect("Seleccionar Personas", coordinadores, key="personas_general")
 
-            if st.button("Agregar a Informe", key=f"agregar_{len(reporte_acumulado)}"):
-                for persona in seleccion_personas:
-                    tabla_resultante = estudios_por_coordinador(df_grouped, persona, categoria)
-                    reporte_acumulado.append({
-                        'nombre': persona,
-                        'categoria': categoria,
-                        'tabla': tabla_resultante
-                    })
-                st.success(f"Se han agregado {len(seleccion_personas)} reportes al informe acumulado.")
+        if st.button("Agregar a Informe", key="agregar_general"):
+            for persona in seleccion_personas:
+                tabla_resultante = estudios_por_coordinador(df_grouped, persona, categoria)
+                reporte_acumulado.append({
+                    'nombre': persona,
+                    'categoria': categoria,
+                    'tabla': tabla_resultante
+                })
+            st.success(f"Se han agregado {len(seleccion_personas)} reportes al informe acumulado.")
 
-        if reporte_acumulado and st.button("Generar y Descargar Informe Acumulado"):
+        if reporte_acumulado and st.button("Generar y Descargar Informe Acumulado", key="descargar_informe"):
             filename = generar_documento_acumulado(reporte_acumulado)
             with open(filename, "rb") as file:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
-            break
-
-        if st.button("Terminar Selección y Generar Informe", key=f"terminar_{len(reporte_acumulado)}"):
-            break
 
     else:
         st.warning("Por favor selecciona una categoría.")
