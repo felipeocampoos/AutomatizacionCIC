@@ -70,6 +70,18 @@ def calcular_disponibilidad(fase, categoria):
             return "2 horas"
         elif fase == "Administrativo cierre":
             return "1 hora"
+    elif categoria in [
+        "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", 
+        "MD asistencial 5", "MD asistencial 6", "MD asistencial 7", "MD asistencial 8"
+    ]:
+        if fase == "Administrativo Pre inicio":
+            return "15 minutos"
+        elif fase == "Reclutamiento":
+            return "1 hora"
+        elif fase == "Seguimiento":
+            return "30 minutos"
+        elif fase == "Administrativo cierre":
+            return "0 minutos"
     return "N/A"
 
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
@@ -180,6 +192,7 @@ if csv_data:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
     else:
         st.warning("Por favor selecciona una categoría.")
+
 
 
 
