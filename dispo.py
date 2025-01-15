@@ -141,9 +141,10 @@ def generar_documento_acumulado(reporte_acumulado):
     return filename
 
 # Código para ejecutar la lógica en la interfaz Streamlit
-st.title("Generador de Informes Acumulados")
+st.title("Generador de Informes")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
+
 
 # Inicializar el estado del informe acumulado en session_state
 if 'reporte_acumulado' not in st.session_state:
@@ -192,6 +193,8 @@ if csv_data:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
     else:
         st.warning("Por favor selecciona una categoría.")
+
+st.subheader("Desarrollado por: Unidad de Inteligencia Artificial")
 
 
 
