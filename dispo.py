@@ -161,7 +161,7 @@ if csv_data:
     df_grouped = cargar_datos(csv_data)
 
     categorias = [
-        "Seleccionar", "Coordinador Principal", "Coordinador backup principal 1", "Coordinador backup principal 2",
+        "Seleccionar", "Coordinador Principal", "Coordinador Supernumerario", "Coordinador backup principal 1", "Coordinador backup principal 2",
         "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", 
         "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", "MD asistencial 5", 
         "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "Investigador Principal", 
