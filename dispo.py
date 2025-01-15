@@ -35,55 +35,63 @@ def obtener_coordinadores(df_grouped, columna):
     coordinadores = df_grouped[columna].dropna().unique()
     return coordinadores
 
-# Función para calcular la disponibilidad de horas
 def calcular_disponibilidad(fase, categoria):
-    if categoria == "Investigador Principal":
-        if fase == "Administrativo Pre inicio":
-            return "30 minutos"
-        elif fase == "Reclutamiento":
-            return "2 horas"
-        elif fase == "Seguimiento":
-            return "2 horas"
-        elif fase == "Administrativo cierre":
-            return "30 minutos"
-    elif categoria in [
-        "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4",
-        "Co-Investigador 5", "Co-Investigador 6", "Co-Investigador 7"
-    ]:
-        if fase == "Administrativo Pre inicio":
-            return "15 minutos"
-        elif fase == "Reclutamiento":
-            return "1 hora"
-        elif fase == "Seguimiento":
-            return "30 minutos"
-        elif fase == "Administrativo cierre":
-            return "0 minutos"
-    elif categoria in [
-        "Coordinador Principal", "Coordinador backup principal 1", "Coordinador backup principal 2",
-        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5"
-    ]:
-        if fase == "Administrativo Pre inicio":
-            return "1 hora"
-        elif fase == "Reclutamiento":
-            return "4 horas"
-        elif fase == "Seguimiento":
-            return "2 horas"
-        elif fase == "Administrativo cierre":
-            return "1 hora"
-    elif categoria in [
-        "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", 
-        "MD asistencial 5", "MD asistencial 6", "MD asistencial 7", "MD asistencial 8"
-    ]:
-        if fase == "Administrativo Pre inicio":
-            return "15 minutos"
-        elif fase == "Reclutamiento":
-            return "1 hora"
-        elif fase == "Seguimiento":
-            return "30 minutos"
-        elif fase == "Administrativo cierre":
-            return "0 minutos"
-    return "N/A"
+    # Configuración de la disponibilidad basada en la tabla
+    disponibilidad = {
+        "Investigador Principal": {
+            "Administrativo Pre inicio": "30 minutos",
+            "Reclutamiento": "2 horas",
+            "Reclutamiento on Hold": "1 hora",
+            "Seguimiento": "2 horas",
+            "Administrativo cierre": "30 minutos",
+        },
+        **{f"Co-Investigador {i}": {
+            "Administrativo Pre inicio": "15 minutos",
+            "Reclutamiento": "1 hora",
+            "Reclutamiento on Hold": "30 minutos",
+            "Seguimiento": "1 hora",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(1, 8)},
+        "Coordinador Principal": {
+            "Administrativo Pre inicio": "1 hora",
+            "Reclutamiento": "4 horas",
+            "Reclutamiento on Hold": "2 horas",
+            "Seguimiento": "2 horas",
+            "Administrativo cierre": "1 hora",
+        },
+        **{f"Coordinador backup principal {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(1, 6)},
+        "MD asistencial 1": {
+            "Administrativo Pre inicio": "15 minutos",
+            "Reclutamiento": "1 hora",
+            "Reclutamiento on Hold": "30 minutos",
+            "Seguimiento": "1 hora",
+            "Administrativo cierre": "0 minutos",
+        },
+        **{f"MD asistencial {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(2, 9)},
+        "Coordinador Supernumerario": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        },
+    }
 
+    # Retornar la disponibilidad según la categoría y fase
+    return disponibilidad.get(categoria, {}).get(fase, "N/A")
+    
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
 def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     # Filtrar estudios activos
