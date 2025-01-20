@@ -91,7 +91,7 @@ def calcular_disponibilidad(fase, categoria):
 
     # Retornar la disponibilidad según la categoría y fase
     return disponibilidad.get(categoria, {}).get(fase, "N/A")
-    
+
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
 def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     # Filtrar estudios activos
@@ -109,8 +109,8 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
         'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
         'Número del Comité': estudios_filtrados['Número IRB'],
         'Fase del Estudio': estudios_filtrados['Estado especifico del estudio'],
-        'Sujetos Tamizados': estudios_filtrados['Total de tamizados'],
-        'Sujetos Activos': estudios_filtrados['Total de activos'],
+        'Sujetos Tamizados': estudios_filtrados['Total de tamizados'].fillna(0).astype(int),
+        'Sujetos Activos': estudios_filtrados['Total de activos'].fillna(0).astype(int),
         'Disponibilidad de horas': estudios_filtrados.apply(
             lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], columna), axis=1)
     }).reset_index(drop=True)
@@ -152,7 +152,6 @@ def generar_documento_acumulado(reporte_acumulado):
 st.title("Generador de Informes")
 st.header("Centro de Investigaciones Clínicas")
 st.subheader("Fundación Valle del Lili")
-
 
 # Inicializar el estado del informe acumulado en session_state
 if 'reporte_acumulado' not in st.session_state:
