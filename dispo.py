@@ -201,4 +201,4 @@ if csv_data:
     else:
         st.warning("Por favor selecciona una categoría.")
 
-st.subheader("Desarrollado por: Unidad de Inteligencia Artificial")
+st.subheader("Desarrollado por: Unidad de Inteligencia Artificial- UIA")
