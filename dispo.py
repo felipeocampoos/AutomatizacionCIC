@@ -37,6 +37,7 @@ def obtener_coordinadores(df_grouped, columna):
 
 # Función para calcular disponibilidad
 def calcular_disponibilidad(fase, categoria):
+    # Configuración de la disponibilidad basada en la tabla
     disponibilidad = {
         "Investigador Principal": {
             "Administrativo Pre inicio": "30 minutos",
@@ -52,6 +53,41 @@ def calcular_disponibilidad(fase, categoria):
             "Seguimiento": "1 hora",
             "Administrativo cierre": "0 minutos",
         } for i in range(1, 8)},
+        "Coordinador Principal": {
+            "Administrativo Pre inicio": "1 hora",
+            "Reclutamiento": "4 horas",
+            "Reclutamiento on Hold": "2 horas",
+            "Seguimiento": "2 horas",
+            "Administrativo cierre": "1 hora",
+        },
+        **{f"Coordinador backup principal {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(1, 6)},
+        "MD asistencial 1": {
+            "Administrativo Pre inicio": "15 minutos",
+            "Reclutamiento": "1 hora",
+            "Reclutamiento on Hold": "30 minutos",
+            "Seguimiento": "1 hora",
+            "Administrativo cierre": "0 minutos",
+        },
+        **{f"MD asistencial {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(2, 9)},
+        "Coordinador Supernumerario": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        },
     }
     return disponibilidad.get(categoria, {}).get(fase, "N/A")
 
@@ -67,7 +103,7 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     
     tabla_estudios = pd.DataFrame({
         'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
-        'Número del Comité': estudios_filtrados['Número IRB'].astype(str),  # Convertimos a string para evitar la pérdida de ceros finales
+        'Número del Comité': estudios_filtrados['Número IRB'].astype(str),
         'Fase del Estudio': estudios_filtrados['Estado especifico del estudio'],
         'Sujetos Tamizados': estudios_filtrados['Total de tamizados'].fillna(0).astype(int),
         'Sujetos Activos': estudios_filtrados['Total de activos'].fillna(0).astype(int),
