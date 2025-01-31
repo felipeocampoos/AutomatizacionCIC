@@ -37,7 +37,57 @@ def obtener_coordinadores(df_grouped, columna):
 
 # Función para calcular la disponibilidad
 def calcular_disponibilidad(fase, categoria):
-    disponibilidad = { ... }  # Manteniendo la misma lógica de disponibilidad
+    disponibilidad = { 
+        "Investigador Principal": {
+            "Administrativo Pre inicio": "30 minutos",
+            "Reclutamiento": "2 horas",
+            "Reclutamiento on Hold": "1 hora",
+            "Seguimiento": "2 horas",
+            "Administrativo cierre": "30 minutos",
+        },
+        **{f"Co-Investigador {i}": {
+            "Administrativo Pre inicio": "15 minutos",
+            "Reclutamiento": "1 hora",
+            "Reclutamiento on Hold": "30 minutos",
+            "Seguimiento": "1 hora",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(1, 8)},
+        "Coordinador Principal": {
+            "Administrativo Pre inicio": "1 hora",
+            "Reclutamiento": "4 horas",
+            "Reclutamiento on Hold": "2 horas",
+            "Seguimiento": "2 horas",
+            "Administrativo cierre": "1 hora",
+        },
+        **{f"Coordinador backup principal {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(1, 6)},
+        "MD asistencial 1": {
+            "Administrativo Pre inicio": "15 minutos",
+            "Reclutamiento": "1 hora",
+            "Reclutamiento on Hold": "30 minutos",
+            "Seguimiento": "1 hora",
+            "Administrativo cierre": "0 minutos",
+        },
+        **{f"MD asistencial {i}": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        } for i in range(2, 9)},
+        "Coordinador Supernumerario": {
+            "Administrativo Pre inicio": "0 minutos",
+            "Reclutamiento": "0 minutos",
+            "Reclutamiento on Hold": "0 minutos",
+            "Seguimiento": "0 minutos",
+            "Administrativo cierre": "0 minutos",
+        },
+    }# Manteniendo la misma lógica de disponibilidad
     return disponibilidad.get(categoria, {}).get(fase, "N/A")
 
 # Función para filtrar estudios por el coordinador, MD asistencial o investigador
@@ -108,7 +158,14 @@ csv_data = obtener_datos_api()
 if csv_data:
     df_grouped = cargar_datos(csv_data)
     
-    categorias = [ ... ]  # Lista de categorías igual a la anterior
+     categorias = [
+        "Seleccionar", "Coordinador Principal", "Coordinador Supernumerario", "Coordinador backup principal 1", "Coordinador backup principal 2",
+        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", 
+        "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", "MD asistencial 5", 
+        "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "Investigador Principal", 
+        "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4", "Co-Investigador 5",
+        "Co-Investigador 6", "Co-Investigador 7"
+    ]  # Lista de categorías igual a la anterior
     
     seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key="categoria_general")
     
