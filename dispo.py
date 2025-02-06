@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import requests
 from docx import Document
-from io import StringIO, BytesIO
+from io import StringIO
 
 # Función para obtener los datos desde la API
 def obtener_datos_api():
@@ -87,8 +87,29 @@ def calcular_disponibilidad(fase, categoria):
             "Seguimiento": "0 minutos",
             "Administrativo cierre": "0 minutos",
         },
-    }
+    }# Manteniendo la misma lógica de disponibilidad
     return disponibilidad.get(categoria, {}).get(fase, "N/A")
+
+# Función para filtrar estudios por el coordinador, MD asistencial o investigador
+def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
+    estudios_filtrados = df_grouped[
+        (df_grouped[columna] == coordinador_seleccionado) &
+        (df_grouped['Estado general del estudio'].str.contains('1. Activo', na=False))
+    ]
+    estudios_filtrados['Estado especifico del estudio'] = estudios_filtrados['Estado especifico del estudio'].str.replace(
+        r'^\d+\.\s', '', regex=True)
+    
+    tabla_estudios = pd.DataFrame({
+        'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
+        'Número del Comité': estudios_filtrados['Número IRB'].astype(str),  # Convertir en string
+        'Fase del Estudio': estudios_filtrados['Estado especifico del estudio'],
+        'Sujetos Tamizados': estudios_filtrados['Total de tamizados'].fillna(0).astype(int),
+        'Sujetos Activos': estudios_filtrados['Total de activos'].fillna(0).astype(int),
+        'Disponibilidad de horas': estudios_filtrados.apply(
+            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], columna), axis=1)
+    }).reset_index(drop=True)
+    
+    return tabla_estudios
 
 # Función para generar el documento en Word
 def generar_documento_acumulado(reporte_acumulado):
@@ -113,7 +134,7 @@ def generar_documento_acumulado(reporte_acumulado):
             for _, row in tabla_estudios.iterrows():
                 row_cells = table.add_row().cells
                 for i, value in enumerate(row):
-                    row_cells[i].text = str(value)
+                    row_cells[i].text = str(value)  # Convertir todo a string
         else:
             doc.add_paragraph("No hay estudios asociados.")
 
@@ -121,17 +142,54 @@ def generar_documento_acumulado(reporte_acumulado):
     doc.save(filename)
     return filename
 
-# Botón para descargar la base de datos en formato XLSX
+# Código para ejecutar la lógica en la interfaz Streamlit
+st.title("Generador de informes de disponibilidad")
+st.header("Centro de Investigaciones Clínicas")
+st.subheader("Fundación Valle del Lili")
+
+if 'reporte_acumulado' not in st.session_state:
+    st.session_state.reporte_acumulado = []
+
+if st.button("Limpiar Informe"):
+    st.session_state.reporte_acumulado = []
+    st.success("El informe ha sido limpiado exitosamente.")
+
+csv_data = obtener_datos_api()
 if csv_data:
-    df = pd.read_csv(StringIO(csv_data), sep=';')
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='Datos')
-    output.seek(0)
+    df_grouped = cargar_datos(csv_data)
     
-    st.download_button(
-        label="Descargar Base de Datos en XLSX",
-        data=output,
-        file_name="Base_de_Datos.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+    categorias = [
+        "Seleccionar", "Coordinador Principal", "Coordinador Supernumerario", "Coordinador backup principal 1", "Coordinador backup principal 2",
+        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", 
+        "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", "MD asistencial 5", 
+        "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "Investigador Principal", 
+        "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4", "Co-Investigador 5",
+        "Co-Investigador 6", "Co-Investigador 7"
+    ]  # Lista de categorías igual a la anterior
+    
+    seleccion_categoria = st.selectbox("Selecciona una categoría", categorias, key="categoria_general")
+    
+    if seleccion_categoria != "Seleccionar":
+        categoria = seleccion_categoria
+        coordinadores = obtener_coordinadores(df_grouped, categoria)
+        
+        seleccion_personas = st.multiselect("Seleccionar Personas", coordinadores, key="personas_general")
+        
+        if st.button("Agregar a Informe", key="agregar_general"):
+            for persona in seleccion_personas:
+                tabla_resultante = estudios_por_coordinador(df_grouped, persona, categoria)
+                st.session_state.reporte_acumulado.append({
+                    'nombre': persona,
+                    'categoria': categoria,
+                    'tabla': tabla_resultante
+                })
+            st.success(f"Se han agregado {len(seleccion_personas)} reportes al informe acumulado.")
+
+        if st.session_state.reporte_acumulado and st.button("Generar y Descargar Informe Acumulado", key="descargar_informe"):
+            filename = generar_documento_acumulado(st.session_state.reporte_acumulado)
+            with open(filename, "rb") as file:
+                st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
+    else:
+        st.warning("Por favor selecciona una categoría.")
+
+st.subheader("Desarrollado por: Unidad de Inteligencia Artificial- UIA")
