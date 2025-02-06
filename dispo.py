@@ -101,7 +101,7 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     
     tabla_estudios = pd.DataFrame({
         'Acrónimo': estudios_filtrados['Acrónimo Estudio'],
-        'Número del Comité': estudios_filtrados['Número IRB'].astype(str),  # Convertir en string
+        'Número del Comité': estudios_filtrados['Número IRB'].apply(lambda x: f"{int(x)}" if pd.notna(x) else ""),  # Convertir en string
         'Fase del Estudio': estudios_filtrados['Estado especifico del estudio'],
         'Sujetos Tamizados': estudios_filtrados['Total de tamizados'].fillna(0).astype(int),
         'Sujetos Activos': estudios_filtrados['Total de activos'].fillna(0).astype(int),
