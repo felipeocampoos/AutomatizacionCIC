@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import requests
 from docx import Document
-from io import StringIO
+from io import StringIO, BytesIO
 
 # Función para obtener los datos desde la API
 def obtener_datos_api():
@@ -191,5 +191,18 @@ if csv_data:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
     else:
         st.warning("Por favor selecciona una categoría.")
+    # Botón para descargar la base de datos en formato XLSX
+    st.subheader("Descargar Base de Datos")
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df_grouped.to_excel(writer, sheet_name='Datos', index=True)
+    output.seek(0)
+    
+    st.download_button(
+        label="Descargar Base de Datos en XLSX",
+        data=output,
+        file_name="Base_de_Datos.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
 
 st.subheader("Desarrollado por: Unidad de Inteligencia Artificial- UIA")
