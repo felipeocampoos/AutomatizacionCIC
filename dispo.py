@@ -155,6 +155,22 @@ if st.button("Limpiar Informe"):
     st.success("El informe ha sido limpiado exitosamente.")
 
 csv_data = obtener_datos_api()
+# Obtener datos de la API
+if csv_data:
+    df = pd.read_csv(StringIO(csv_data), sep=';')
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Datos')
+    output.seek(0)
+    
+    st.download_button(
+        label="Descargar Base de Datos en XLSX",
+        data=output,
+        file_name="Base_de_Datos.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+else:
+    st.warning("No se pudieron obtener datos de la API.")
 if csv_data:
     df_grouped = cargar_datos(csv_data)
     
