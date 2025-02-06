@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 import requests
 from docx import Document
-from io import StringIO
+from io import StringIO, BytesIO
 
 # Función para obtener los datos desde la API
 def obtener_datos_api():
