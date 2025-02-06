@@ -24,6 +24,31 @@ def obtener_datos_api():
         st.error(f"Error al obtener los datos: {r.status_code}")
         return None
 
+# Función para cargar y procesar los datos
+def cargar_datos(csv_data):
+    df = pd.read_csv(StringIO(csv_data), sep=';')
+    return df
+
+# Interfaz de usuario en Streamlit
+st.title("Descargar Base de Datos en XLSX")
+
+csv_data = obtener_datos_api()
+if csv_data:
+    df = cargar_datos(csv_data)
+    
+    # Botón para descargar la base de datos en formato XLSX
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Datos')
+    output.seek(0)
+    
+    st.download_button(
+        label="Descargar Base de Datos en XLSX",
+        data=output,
+        file_name="Base_de_Datos.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
 # Función para cargar y agrupar el archivo CSV
 def cargar_datos(csv_data):
     df = pd.read_csv(StringIO(csv_data), sep=';')
