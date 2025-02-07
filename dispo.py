@@ -192,14 +192,14 @@ if csv_data:
     else:
         st.warning("Por favor selecciona una categoría.")
     # Botón para descargar la base de datos en formato XLSX
-    st.subheader("Descargar Base de Datos")
+    st.subheader("Descargar base de datos")
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df_grouped.to_excel(writer, sheet_name='Datos', index=True)
     output.seek(0)
     
     st.download_button(
-        label="Descargar Base de Datos en XLSX",
+        label="Descargar base de datos consolidada",
         data=output,
         file_name="Base_de_Datos.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
