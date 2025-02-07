@@ -3,6 +3,7 @@ import streamlit as st
 import requests
 from docx import Document
 from io import StringIO, BytesIO
+from datetime import datetime
 
 # Función para obtener los datos desde la API
 def obtener_datos_api():
@@ -111,10 +112,12 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
     
     return tabla_estudios
 
-# Función para generar el documento en Word
 def generar_documento_acumulado(reporte_acumulado):
     doc = Document()
     doc.add_heading("Reporte Acumulado", 0)
+
+    fecha_actual = datetime.now().strftime("%Y-%m-%d")  # Formato de fecha AAAA-MM-DD
+    doc.add_paragraph(f"Fecha de generación: {fecha_actual}\n")
 
     for reporte in reporte_acumulado:
         nombre_persona = reporte['nombre']
@@ -138,7 +141,9 @@ def generar_documento_acumulado(reporte_acumulado):
         else:
             doc.add_paragraph("No hay estudios asociados.")
 
-    filename = "Reporte_Acumulado.docx"
+    # Generar el nombre del archivo con la fecha actual
+    filename = f"Reporte_Acumulado_{fecha_actual}.docx"
+    
     doc.save(filename)
     return filename
 
@@ -189,6 +194,7 @@ if csv_data:
             filename = generar_documento_acumulado(st.session_state.reporte_acumulado)
             with open(filename, "rb") as file:
                 st.download_button(label="Descargar Informe Acumulado", data=file, file_name=filename)
+
     else:
         st.warning("Por favor selecciona una categoría.")
     # Botón para descargar la base de datos en formato XLSX
