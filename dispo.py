@@ -27,7 +27,7 @@ def obtener_datos_api():
 
 # Función para cargar y agrupar el archivo CSV
 def cargar_datos(csv_data):
-    df = pd.read_csv(StringIO(csv_data), sep=';')
+    df = pd.read_csv(StringIO(csv_data), sep=';', dtype={'Número IRB': str})
     df_grouped = df.groupby('ID').first()
     return df_grouped
 
