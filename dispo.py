@@ -86,7 +86,7 @@ def calcular_disponibilidad(fase, categoria):
             "Seguimiento": "0 minutos",
             "Administrativo cierre": "0 minutos",
             "Seguimiento de supervivencia": "15 minutos",
-        } for i in range(2, 11)},
+        } for i in range(2, 12)},
         "Coordinador Supernumerario": {
             "Administrativo Pre inicio": "0 minutos",
             "Reclutamiento": "0 minutos",
