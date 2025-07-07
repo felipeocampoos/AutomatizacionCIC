@@ -114,7 +114,8 @@ def estudios_por_coordinador(df_grouped, coordinador_seleccionado, columna):
         'Sujetos Tamizados': estudios_filtrados['Total de tamizados'].fillna(0).astype(int),
         'Sujetos Activos': estudios_filtrados['Total de activos'].fillna(0).astype(int),
         'Disponibilidad de horas': estudios_filtrados.apply(
-            lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], columna), axis=1)
+                    lambda row: calcular_disponibilidad(row['Estado especifico del estudio'], categoria), axis=1)
+
     }).reset_index(drop=True)
     
     return tabla_estudios
