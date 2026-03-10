@@ -173,9 +173,9 @@ if csv_data:
     
     categorias = [
         "Seleccionar", "Coordinador Principal", "Coordinador Supernumerario", "Coordinador backup principal 1", "Coordinador backup principal 2",
-        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", "Coordinador backup principal 6", "Coordinador backup principal 7", "Coordinador backup principal 8", 
+        "Coordinador backup principal 3", "Coordinador backup principal 4", "Coordinador backup principal 5", "Coordinador backup principal 6", "Coordinador backup principal 7", "Coordinador backup principal 8", "Coordinador backup principal 9", "Coordinador backup principal 10", "Coordinador backup principal 11", "Coordinador backup principal 12", 
         "MD asistencial 1", "MD asistencial 2", "MD asistencial 3", "MD asistencial 4", "MD asistencial 5", 
-        "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "MD asistencial 9", "MD asistencial 10","Investigador Principal", 
+        "MD asistencial 6", "MD asistencial 7", "MD asistencial 8", "MD asistencial 9", "MD asistencial 10", "MD asistencial 11", "MD asistencial 11","Investigador Principal", 
         "Co-Investigador 1", "Co-Investigador 2", "Co-Investigador 3", "Co-Investigador 4", "Co-Investigador 5",
         "Co-Investigador 6", "Co-Investigador 7"
     ]  # Lista de categorías igual a la anterior
@@ -220,5 +220,6 @@ if csv_data:
     )
 
 st.subheader("Desarrollado por: Unidad de Inteligencia Artificial- UIA")
+
 
 
