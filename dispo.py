@@ -70,7 +70,7 @@ def calcular_disponibilidad(fase, categoria):
             "Seguimiento": "0 minutos",
             "Administrativo cierre": "0 minutos",
             "Seguimiento de supervivencia": "15 minutos",
-        } for i in range(1, 14)},
+        } for i in range(1, 12)},
         "MD asistencial 1": {
             "Administrativo Pre inicio": "15 minutos",
             "Reclutamiento": "1 hora",
@@ -86,7 +86,7 @@ def calcular_disponibilidad(fase, categoria):
             "Seguimiento": "0 minutos",
             "Administrativo cierre": "0 minutos",
             "Seguimiento de supervivencia": "15 minutos",
-        } for i in range(2, 14)},
+        } for i in range(2, 12)},
         "Coordinador Supernumerario": {
             "Administrativo Pre inicio": "0 minutos",
             "Reclutamiento": "0 minutos",
@@ -220,6 +220,7 @@ if csv_data:
     )
 
 st.subheader("Desarrollado por: Unidad de Inteligencia Artificial- UIA")
+
 
 
 
